@@ -117,7 +117,7 @@ namespace Atl.Repository.Standard.Tests.Fixtures
 		/// </summary>
 		public void Dispose()
 		{
-			//ContextFactory.CreateDbContext().Database.EnsureDeleted();
+			ContextFactory.CreateDbContext().Database.EnsureDeleted();
 		}
 	}
 }
