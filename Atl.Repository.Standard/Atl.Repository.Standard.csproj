@@ -2,6 +2,14 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <Copyright />
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Version>1.0.1</Version>
+    <PackageLicenseUrl>MIT</PackageLicenseUrl>
+    <RepositoryUrl>https://github.com/Activehigh/Atl.GenericRepository</RepositoryUrl>
+    <Authors>Mahmudul Islam</Authors>
+    <Company />
+    <PackageProjectUrl>https://github.com/Activehigh/Atl.GenericRepository</PackageProjectUrl>
   </PropertyGroup>
 
   <ItemGroup>
