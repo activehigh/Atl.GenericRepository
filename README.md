@@ -93,3 +93,8 @@ _repository.GetAll<>().Where(x => x.IsActive  && ... && ...).OrderByDescending(x
 # Advanced Usage
 
 Comming soon.
+
+
+# License
+
+Available as open source under the terms of the [MIT License](LICENSE).
