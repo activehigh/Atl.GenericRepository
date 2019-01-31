@@ -1,4 +1,4 @@
-# Atl.GenericRepository
+# A generic repository for .net platform
 
 A Lightweight EF Core Repository. More changes comming. 
 
