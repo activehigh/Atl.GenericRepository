@@ -5,7 +5,7 @@ A Lightweight EF Core Repository. More changes comming. For now it only supports
 
 # Basic Usage
 
-## 1. First, Domains
+## 1. Domains
 
 Please use any POCO classses but you have to derive it from `IDomain<>`. I would prefer to use `BaseDomain` to contain all the common properties.
 
@@ -28,7 +28,7 @@ public class Tenant : BaseDomain, IDomain<int>
 }
 ```
 
-## 2. Second, Domain Injector
+## 2. Domain Injector
 
 This class will inject domains when the repository is created. This provides options for using a DI to dynamically load domains from different assemblies
 
@@ -42,7 +42,7 @@ public class DomainInjector : IDomainInjector
 }
 ```
 
-## 3. Third, The Database configuration provider.
+## 3. The Database configuration provider.
 
 Same as the Domain Injector, this configuration provider supports DI and can be injected easily. Provides configuration and connectionstring to connect to database. For example, if we need to use a SQLite database we use -
 
@@ -58,7 +58,7 @@ public class TestConfigurationProvier : IConfigurationProvider
 }
 ```
 
-## Fourth, Put it all together and create a context factory
+## 4. Put it all together and create a context factory
 
 ```
 var configurationProvider = new TestConfigurationProvier();
@@ -66,7 +66,7 @@ var domainInjector = new DomainInjector();
 ContextFactory = new DomainContextFactory(new List<IDomainInjector>() { domainInjector }, configurationProvider);
 ```
 
-## Fifth, Optional, If you want to generate Databse using this library
+## 5. (Optional), If you want to generate Database using this library
 
 Call ensure created to generate the database for you.
 ```
@@ -76,7 +76,7 @@ using (var context = ContextFactory.CreateDbContext())
 }
 ```
 
-## Sixth, Create the repository and use it. 
+## 6. Create the repository and use it. 
 
 ```
 Repository = new Repository<int>(idGenerator, ContextFactory, new DefaultSystemClock(), null);
