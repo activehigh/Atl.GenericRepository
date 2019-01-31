@@ -1,6 +1,6 @@
 # Atl.GenericRepository
 
-A Lightweight EF Core Repository. More changes comming. For now it only supports basic add.get,delete,update.
+A Lightweight EF Core Repository. More changes comming. 
 
 
 # Basic Usage
