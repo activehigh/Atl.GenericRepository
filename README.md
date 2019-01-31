@@ -2,6 +2,11 @@
 
 A Lightweight EF Core Repository. More changes comming. 
 
+# Supported Platform
+
+|Platform   |Version      |
+|----------|:-------------|
+|.Net Standard |2.0+|
 
 # Basic Usage
 
