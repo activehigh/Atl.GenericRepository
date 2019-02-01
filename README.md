@@ -8,6 +8,15 @@ A Lightweight EF Core Repository. More changes comming.
 |----------|:-------------|
 |.Net Standard |2.0+|
 
+# Installation
+```
+Install-Package Atl.Repository.Standard
+```
+OR
+```
+dotnet add package Atl.Repository.Standard
+```
+
 # Basic Usage
 
 ## 1. Domains
