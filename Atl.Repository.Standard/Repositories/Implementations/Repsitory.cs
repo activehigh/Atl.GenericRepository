@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Atl.Repository.Standard.ApplicationContext;
 using Atl.Repository.Standard.ApplicationContext.Contracts;
 using Atl.Repository.Standard.DatabaseContents.Implementations;
 using Atl.Repository.Standard.DepdendencyInjection.Contracts;
@@ -11,9 +10,7 @@ using Atl.Repository.Standard.DomainInjection.Contracts;
 using Atl.Repository.Standard.Domains.Contracts;
 using Atl.Repository.Standard.Repositories.Contracts;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Internal;
-using Remotion.Linq.Parsing.Structure.IntermediateModel;
 
 namespace Atl.Repository.Standard.Repositories.Implementations
 {
@@ -203,8 +200,9 @@ namespace Atl.Repository.Standard.Repositories.Implementations
         {
             var context = _contextLocator.CreateDbContext();
             var obj = await context.Set<TDomain>().FirstOrDefaultAsync(_keyGenerator.Equal<TDomain>(x => x.Id, id), CancellationToken.None);
-            return obj == null ? null : context.Set<TDomain>().Remove(obj).Entity;
+            obj = obj == null ? null : context.Set<TDomain>().Remove(obj).Entity;
             await context.SaveChangesAsync(token);
+            return obj;
         }
 
         /// <summary>
