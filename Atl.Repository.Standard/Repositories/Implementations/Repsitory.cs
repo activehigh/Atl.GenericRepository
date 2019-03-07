@@ -14,49 +14,49 @@ using Microsoft.Extensions.Internal;
 
 namespace Atl.Repository.Standard.Repositories.Implementations
 {
-	public class Repository<TKey> : IGenericRepository<TKey>
-	{
-		private readonly IDomainContextFactory<DatabaseContext> _contextLocator;
-		private readonly ISystemClock _clock;
-		private readonly IEnumerable<IApplicationContext<TKey>> _applicationContexts;
-		private readonly IKeyGenerator<TKey> _keyGenerator;
-
-		/// <summary>
-		/// Initializes a new instance of the <see cref="Repository{T}" /> class.
-		/// </summary>
-		/// <param name="keyGenerator">The key generator.</param>
-		/// <param name="contextLocator">The context locator.</param>
-		/// <param name="clock">The clock.</param>
-		/// <param name="applicationContexts">The application contexts.</param>
-		public Repository(IKeyGenerator<TKey> keyGenerator,
-			IDomainContextFactory<DatabaseContext> contextLocator,
-			ISystemClock clock,
-			IEnumerable<IApplicationContext<TKey>> applicationContexts)
-		{
-			_keyGenerator = keyGenerator;
-			_contextLocator = contextLocator;
-			_clock = clock;
-			_applicationContexts = applicationContexts;
-		}
-
-		#region Insert Mtethods
+    public class Repository<TKey> : IGenericRepository<TKey>
+    {
+        private readonly IDomainContextFactory<DatabaseContext> _contextLocator;
+        private readonly ISystemClock _clock;
+        private readonly IEnumerable<IApplicationContext<TKey>> _applicationContexts;
+        private readonly IKeyGenerator<TKey> _keyGenerator;
 
         /// <summary>
-		/// Adds the specified object.
-		/// </summary>
-		/// <param name="obj">The object.</param>
-		/// <returns></returns>
-		public virtual TDomain Add<TDomain>(TDomain obj) where TDomain : class, IDomain<TKey>
-		{
-			obj.Id = _keyGenerator.DoesRequireNewKey(obj.Id) ? _keyGenerator.Generate(obj) : obj.Id;
-			obj.UpdatedAt = obj.CreatedAt = _clock.UtcNow.DateTime;
+        /// Initializes a new instance of the <see cref="Repository{T}" /> class.
+        /// </summary>
+        /// <param name="keyGenerator">The key generator.</param>
+        /// <param name="contextLocator">The context locator.</param>
+        /// <param name="clock">The clock.</param>
+        /// <param name="applicationContexts">The application contexts.</param>
+        public Repository(IKeyGenerator<TKey> keyGenerator,
+            IDomainContextFactory<DatabaseContext> contextLocator,
+            ISystemClock clock,
+            IEnumerable<IApplicationContext<TKey>> applicationContexts)
+        {
+            _keyGenerator = keyGenerator;
+            _contextLocator = contextLocator;
+            _clock = clock;
+            _applicationContexts = applicationContexts;
+        }
+
+        #region Insert Mtethods
+
+        /// <summary>
+        /// Adds the specified object.
+        /// </summary>
+        /// <param name="obj">The object.</param>
+        /// <returns></returns>
+        public virtual TDomain Add<TDomain>(TDomain obj) where TDomain : class, IDomain<TKey>
+        {
+            obj.Id = _keyGenerator.DoesRequireNewKey(obj.Id) ? _keyGenerator.Generate(obj) : obj.Id;
+            obj.UpdatedAt = obj.CreatedAt = _clock.UtcNow.DateTime;
             obj = (_applicationContexts ?? Enumerable.Empty<IApplicationContext<TKey>>()).Aggregate(obj,
-                (current, applicationContext) => (TDomain) applicationContext.ApplyContext(current));
+                (current, applicationContext) => (TDomain)applicationContext.ApplyContext(current));
             var context = _contextLocator.CreateDbContext();
-			obj = context.Set<TDomain>().Add(obj).Entity;
-			context.SaveChanges();
-			return obj;
-		}
+            obj = context.Set<TDomain>().Add(obj).Entity;
+            context.SaveChanges();
+            return obj;
+        }
 
         /// <summary>
         /// Adds the specific object asynchronously.
@@ -70,7 +70,7 @@ namespace Atl.Repository.Standard.Repositories.Implementations
             obj.Id = _keyGenerator.DoesRequireNewKey(obj.Id) ? _keyGenerator.Generate(obj) : obj.Id;
             obj.UpdatedAt = obj.CreatedAt = _clock.UtcNow.DateTime;
             obj = (_applicationContexts ?? Enumerable.Empty<IApplicationContext<TKey>>()).Aggregate(obj,
-                (current, applicationContext) => (TDomain) applicationContext.ApplyContext(current));
+                (current, applicationContext) => (TDomain)applicationContext.ApplyContext(current));
             var context = _contextLocator.CreateDbContext();
             obj = context.Set<TDomain>().Add(obj).Entity;
             await context.SaveChangesAsync(token);
@@ -86,19 +86,19 @@ namespace Atl.Repository.Standard.Repositories.Implementations
 		/// <returns></returns>
 		/// <exception cref="System.NotImplementedException"></exception>
 		public virtual TDomain Update<TDomain>(TDomain obj) where TDomain : class, IDomain<TKey>
-		{
-			var context = _contextLocator.CreateDbContext();
-			obj.UpdatedAt = _clock.UtcNow.DateTime;
+        {
+            var context = _contextLocator.CreateDbContext();
+            obj.UpdatedAt = _clock.UtcNow.DateTime;
             obj = (_applicationContexts ?? Enumerable.Empty<IApplicationContext<TKey>>()).Aggregate(obj,
-                (current, applicationContext) => (TDomain) applicationContext.ApplyContext(current));
+                (current, applicationContext) => (TDomain)applicationContext.ApplyContext(current));
             if (context.Entry(obj).State == EntityState.Detached)
-			{
-				context.Set<TDomain>().Attach(obj);
-				context.Entry(obj).State = EntityState.Modified;
-			}
-			context.SaveChanges();
-			return obj;
-		}
+            {
+                context.Set<TDomain>().Attach(obj);
+                context.Entry(obj).State = EntityState.Modified;
+            }
+            context.SaveChanges();
+            return obj;
+        }
 
         /// <summary>
         /// Updates the specific object asynchronously.
@@ -112,7 +112,7 @@ namespace Atl.Repository.Standard.Repositories.Implementations
             var context = _contextLocator.CreateDbContext();
             obj.UpdatedAt = _clock.UtcNow.DateTime;
             obj = (_applicationContexts ?? Enumerable.Empty<IApplicationContext<TKey>>()).Aggregate(obj,
-                (current, applicationContext) => (TDomain) applicationContext.ApplyContext(current));
+                (current, applicationContext) => (TDomain)applicationContext.ApplyContext(current));
             if (context.Entry(obj).State == EntityState.Detached)
             {
                 context.Set<TDomain>().Attach(obj);
@@ -124,19 +124,19 @@ namespace Atl.Repository.Standard.Repositories.Implementations
 
         #endregion
 
-		#region Get Methods
-		/// <summary>
-		/// Gets by id
-		/// </summary>
-		/// <typeparam name="TDomain">The type of the domain.</typeparam>
-		/// <param name="id">The identifier.</param>
-		/// <returns></returns>
-		/// <exception cref="System.NotImplementedException"></exception>
-		public virtual TDomain GetById<TDomain>(TKey id) where TDomain : class, IDomain<TKey>
-		{
-			return _contextLocator.CreateDbContext().Set<TDomain>().AsNoTracking()
-				.FirstOrDefault(_keyGenerator.Equal<TDomain>(x => x.Id, id).Compile());
-		}
+        #region Get Methods
+        /// <summary>
+        /// Gets by id
+        /// </summary>
+        /// <typeparam name="TDomain">The type of the domain.</typeparam>
+        /// <param name="id">The identifier.</param>
+        /// <returns></returns>
+        /// <exception cref="System.NotImplementedException"></exception>
+        public virtual TDomain GetById<TDomain>(TKey id) where TDomain : class, IDomain<TKey>
+        {
+            return _contextLocator.CreateDbContext().Set<TDomain>().AsNoTracking()
+                .FirstOrDefault(_keyGenerator.Equal<TDomain>(x => x.Id, id).Compile());
+        }
 
         /// <summary>
         /// Gets by id
@@ -157,9 +157,9 @@ namespace Atl.Repository.Standard.Repositories.Implementations
 		/// <typeparam name="TDomain">The type of the domain.</typeparam>
 		/// <returns></returns>
 		public virtual IQueryable<TDomain> GetAll<TDomain>() where TDomain : class, IDomain<TKey>
-		{
-			return _contextLocator.CreateDbContext().Set<TDomain>().AsQueryable();
-		}
+        {
+            return _contextLocator.CreateDbContext().Set<TDomain>().AsQueryable();
+        }
 
         /// <summary>
         /// Gets all asynchronous.
@@ -181,10 +181,10 @@ namespace Atl.Repository.Standard.Repositories.Implementations
         /// <param name="id">The identifier.</param>
         /// <exception cref="System.NotImplementedException"></exception>
         public virtual TDomain Delete<TDomain>(TKey id) where TDomain : class, IDomain<TKey>
-		{
-			var context = _contextLocator.CreateDbContext();
-			var obj = context.Set<TDomain>().FirstOrDefault(_keyGenerator.Equal<TDomain>(x => x.Id, id).Compile());
-			obj = obj == null ? null : context.Set<TDomain>().Remove(obj).Entity;
+        {
+            var context = _contextLocator.CreateDbContext();
+            var obj = context.Set<TDomain>().FirstOrDefault(_keyGenerator.Equal<TDomain>(x => x.Id, id).Compile());
+            obj = obj == null ? null : context.Set<TDomain>().Remove(obj).Entity;
             context.SaveChanges();
             return obj;
         }
@@ -213,12 +213,12 @@ namespace Atl.Repository.Standard.Repositories.Implementations
 		/// <returns></returns>
 		/// <exception cref="NotImplementedException"></exception>
 		public virtual void DeleteRange<TDomain>(IEnumerable<TKey> ids) where TDomain : class, IDomain<TKey>
-		{
-			if (ids is null)
-				return;
-			var context = _contextLocator.CreateDbContext();
-			var objs = context.Set<TDomain>().Where(x => ids.Contains(x.Id)).ToList();
-			context.Set<TDomain>().RemoveRange(objs);
+        {
+            if (ids is null)
+                return;
+            var context = _contextLocator.CreateDbContext();
+            var objs = context.Set<TDomain>().Where(x => ids.Contains(x.Id)).ToList();
+            context.Set<TDomain>().RemoveRange(objs);
             context.SaveChanges();
         }
 
@@ -247,19 +247,19 @@ namespace Atl.Repository.Standard.Repositories.Implementations
 		/// <param name="obj">The object.</param>
 		/// <exception cref="System.NotImplementedException"></exception>
 		public virtual TDomain Delete<TDomain>(TDomain obj) where TDomain : class, IDomain<TKey>
-		{
-			if (obj is null)
-				return null;
-			//check whether object is attached or not
-			var context = _contextLocator.CreateDbContext();
-			if (context.Entry(obj).State == EntityState.Detached)
-			{
-				context.Set<TDomain>().Attach(obj);
-			}
-			obj = context.Set<TDomain>().Remove(obj).Entity;
+        {
+            if (obj is null)
+                return null;
+            //check whether object is attached or not
+            var context = _contextLocator.CreateDbContext();
+            if (context.Entry(obj).State == EntityState.Detached)
+            {
+                context.Set<TDomain>().Attach(obj);
+            }
+            obj = context.Set<TDomain>().Remove(obj).Entity;
             context.SaveChanges();
             return obj;
-		}
+        }
 
         /// <summary>
         /// Deletes  the specific object asynchronously.
@@ -290,20 +290,20 @@ namespace Atl.Repository.Standard.Repositories.Implementations
 		/// <param name="objects">The objects.</param>
 		/// <returns></returns>
 		public virtual void DeleteRange<TDomain>(IEnumerable<TDomain> objects) where TDomain : class, IDomain<TKey>
-		{
-			if (objects is null)
-				return;
-			var objectList = objects.ToList();
+        {
+            if (objects is null)
+                return;
+            var objectList = objects.ToList();
 
-			var context = _contextLocator.CreateDbContext();
-			foreach (var domain in objectList)
-			{
-				if (context.Entry(domain).State == EntityState.Detached)
-				{
-					context.Set<TDomain>().Attach(domain);
-				}
-			}
-			context.Set<TDomain>().RemoveRange(objectList);
+            var context = _contextLocator.CreateDbContext();
+            foreach (var domain in objectList)
+            {
+                if (context.Entry(domain).State == EntityState.Detached)
+                {
+                    context.Set<TDomain>().Attach(domain);
+                }
+            }
+            context.Set<TDomain>().RemoveRange(objectList);
             context.SaveChanges();
         }
 
@@ -333,5 +333,5 @@ namespace Atl.Repository.Standard.Repositories.Implementations
         }
 
         #endregion
-	}
+    }
 }
