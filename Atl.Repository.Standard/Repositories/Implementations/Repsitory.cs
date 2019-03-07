@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
-using Atl.Repository.Standard.ApplicationContext;
 using Atl.Repository.Standard.ApplicationContext.Contracts;
 using Atl.Repository.Standard.DatabaseContents.Implementations;
 using Atl.Repository.Standard.DepdendencyInjection.Contracts;
@@ -10,7 +10,6 @@ using Atl.Repository.Standard.DomainInjection.Contracts;
 using Atl.Repository.Standard.Domains.Contracts;
 using Atl.Repository.Standard.Repositories.Contracts;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Internal;
 
 namespace Atl.Repository.Standard.Repositories.Implementations
@@ -41,7 +40,8 @@ namespace Atl.Repository.Standard.Repositories.Implementations
 		}
 
 		#region Insert Mtethods
-		/// <summary>
+
+        /// <summary>
 		/// Adds the specified object.
 		/// </summary>
 		/// <param name="obj">The object.</param>
@@ -50,17 +50,34 @@ namespace Atl.Repository.Standard.Repositories.Implementations
 		{
 			obj.Id = _keyGenerator.DoesRequireNewKey(obj.Id) ? _keyGenerator.Generate(obj) : obj.Id;
 			obj.UpdatedAt = obj.CreatedAt = _clock.UtcNow.DateTime;
-			foreach (var applicationContext in _applicationContexts ?? Enumerable.Empty< IApplicationContext<TKey>> ())
-			{
-				obj = (TDomain)applicationContext.ApplyContext(obj);
-			}
-			var context = _contextLocator.CreateDbContext();
+            obj = (_applicationContexts ?? Enumerable.Empty<IApplicationContext<TKey>>()).Aggregate(obj,
+                (current, applicationContext) => (TDomain) applicationContext.ApplyContext(current));
+            var context = _contextLocator.CreateDbContext();
 			obj = context.Set<TDomain>().Add(obj).Entity;
 			context.SaveChanges();
 			return obj;
 		}
 
-		/// <summary>
+        /// <summary>
+        /// Adds the specific object asynchronously.
+        /// </summary>
+        /// <typeparam name="TDomain">The type of the domain.</typeparam>
+        /// <param name="obj">The object.</param>
+        /// <param name="token">The token.</param>
+        /// <returns></returns>
+        public async Task<TDomain> AddAsync<TDomain>(TDomain obj, CancellationToken token) where TDomain : class, IDomain<TKey>
+        {
+            obj.Id = _keyGenerator.DoesRequireNewKey(obj.Id) ? _keyGenerator.Generate(obj) : obj.Id;
+            obj.UpdatedAt = obj.CreatedAt = _clock.UtcNow.DateTime;
+            obj = (_applicationContexts ?? Enumerable.Empty<IApplicationContext<TKey>>()).Aggregate(obj,
+                (current, applicationContext) => (TDomain) applicationContext.ApplyContext(current));
+            var context = _contextLocator.CreateDbContext();
+            obj = context.Set<TDomain>().Add(obj).Entity;
+            await context.SaveChangesAsync(token);
+            return obj;
+        }
+
+        /// <summary>
 		/// Updates the specified object.
 		/// </summary>
 		/// <typeparam name="TKey">The type of the key.</typeparam>
@@ -72,11 +89,9 @@ namespace Atl.Repository.Standard.Repositories.Implementations
 		{
 			var context = _contextLocator.CreateDbContext();
 			obj.UpdatedAt = _clock.UtcNow.DateTime;
-			foreach (var applicationContext in _applicationContexts ?? Enumerable.Empty<IApplicationContext<TKey>>())
-			{
-				obj = (TDomain)applicationContext.ApplyContext(obj);
-			}
-			if (context.Entry(obj).State == EntityState.Detached)
+            obj = (_applicationContexts ?? Enumerable.Empty<IApplicationContext<TKey>>()).Aggregate(obj,
+                (current, applicationContext) => (TDomain) applicationContext.ApplyContext(current));
+            if (context.Entry(obj).State == EntityState.Detached)
 			{
 				context.Set<TDomain>().Attach(obj);
 				context.Entry(obj).State = EntityState.Modified;
@@ -84,11 +99,34 @@ namespace Atl.Repository.Standard.Repositories.Implementations
 			context.SaveChanges();
 			return obj;
 		}
-		#endregion
+
+        /// <summary>
+        /// Updates the specific object asynchronously.
+        /// </summary>
+        /// <typeparam name="TDomain">The type of the domain.</typeparam>
+        /// <param name="obj">The object.</param>
+        /// <param name="token">The token.</param>
+        /// <returns></returns>
+        public async Task<TDomain> UpdateAsync<TDomain>(TDomain obj, CancellationToken token) where TDomain : class, IDomain<TKey>
+        {
+            var context = _contextLocator.CreateDbContext();
+            obj.UpdatedAt = _clock.UtcNow.DateTime;
+            obj = (_applicationContexts ?? Enumerable.Empty<IApplicationContext<TKey>>()).Aggregate(obj,
+                (current, applicationContext) => (TDomain) applicationContext.ApplyContext(current));
+            if (context.Entry(obj).State == EntityState.Detached)
+            {
+                context.Set<TDomain>().Attach(obj);
+                context.Entry(obj).State = EntityState.Modified;
+            }
+            await context.SaveChangesAsync(token);
+            return obj;
+        }
+
+        #endregion
 
 		#region Get Methods
 		/// <summary>
-		/// Gets the by identifier.
+		/// Gets by id
 		/// </summary>
 		/// <typeparam name="TDomain">The type of the domain.</typeparam>
 		/// <param name="id">The identifier.</param>
@@ -96,37 +134,78 @@ namespace Atl.Repository.Standard.Repositories.Implementations
 		/// <exception cref="System.NotImplementedException"></exception>
 		public virtual TDomain GetById<TDomain>(TKey id) where TDomain : class, IDomain<TKey>
 		{
-			return _contextLocator.CreateDbContext(new[] { "" }).Set<TDomain>().AsNoTracking()
+			return _contextLocator.CreateDbContext().Set<TDomain>().AsNoTracking()
 				.FirstOrDefault(_keyGenerator.Equal<TDomain>(x => x.Id, id).Compile());
 		}
 
-		/// <summary>
+        /// <summary>
+        /// Gets by id
+        /// </summary>
+        /// <typeparam name="TDomain">The type of the domain.</typeparam>
+        /// <param name="id">The identifier.</param>
+        /// <param name="token">The token.</param>
+        /// <returns></returns>
+        public async Task<TDomain> GetByIdAsync<TDomain>(TKey id, CancellationToken token) where TDomain : class, IDomain<TKey>
+        {
+            return await _contextLocator.CreateDbContext().Set<TDomain>().AsNoTracking()
+                .FirstOrDefaultAsync(_keyGenerator.Equal<TDomain>(x => x.Id, id), token);
+        }
+
+        /// <summary>
 		/// Gets all.
 		/// </summary>
 		/// <typeparam name="TDomain">The type of the domain.</typeparam>
 		/// <returns></returns>
 		public virtual IQueryable<TDomain> GetAll<TDomain>() where TDomain : class, IDomain<TKey>
 		{
-			return _contextLocator.CreateDbContext(new[] { "" }).Set<TDomain>().AsQueryable();
+			return _contextLocator.CreateDbContext().Set<TDomain>().AsQueryable();
 		}
-		#endregion
 
-		#region Delete Methods
-		/// <summary>
-		/// Deletes the specified identifier.
-		/// </summary>
-		/// <typeparam name="TKey">The type of the key.</typeparam>
-		/// <typeparam name="TDomain">The type of the domain.</typeparam>
-		/// <param name="id">The identifier.</param>
-		/// <exception cref="System.NotImplementedException"></exception>
-		public virtual TDomain Delete<TDomain>(TKey id) where TDomain : class, IDomain<TKey>
+        /// <summary>
+        /// Gets all asynchronous.
+        /// </summary>
+        /// <typeparam name="TDomain">The type of the domain.</typeparam>
+        /// <returns></returns>
+        public async Task<IQueryable<TDomain>> GetAllAsync<TDomain>(CancellationToken token) where TDomain : class, IDomain<TKey>
+        {
+            return await Task.Run(() => _contextLocator.CreateDbContext().Set<TDomain>().AsQueryable(), token);
+        }
+        #endregion
+
+        #region Delete Methods
+        /// <summary>
+        /// Deletes the specified identifier.
+        /// </summary>
+        /// <typeparam name="TKey">The type of the key.</typeparam>
+        /// <typeparam name="TDomain">The type of the domain.</typeparam>
+        /// <param name="id">The identifier.</param>
+        /// <exception cref="System.NotImplementedException"></exception>
+        public virtual TDomain Delete<TDomain>(TKey id) where TDomain : class, IDomain<TKey>
 		{
 			var context = _contextLocator.CreateDbContext();
 			var obj = context.Set<TDomain>().FirstOrDefault(_keyGenerator.Equal<TDomain>(x => x.Id, id).Compile());
-			return obj == null ? null : context.Set<TDomain>().Remove(obj).Entity;
-		}
+			obj = obj == null ? null : context.Set<TDomain>().Remove(obj).Entity;
+            context.SaveChanges();
+            return obj;
+        }
 
-		/// <summary>
+        /// <summary>
+        /// Deletes the asynchronous.
+        /// </summary>
+        /// <typeparam name="TDomain">The type of the domain.</typeparam>
+        /// <param name="id">The identifier.</param>
+        /// <param name="token">The token.</param>
+        /// <returns></returns>
+        public async Task<TDomain> DeleteAsync<TDomain>(TKey id, CancellationToken token) where TDomain : class, IDomain<TKey>
+        {
+            var context = _contextLocator.CreateDbContext();
+            var obj = await context.Set<TDomain>().FirstOrDefaultAsync(_keyGenerator.Equal<TDomain>(x => x.Id, id), CancellationToken.None);
+            obj = obj == null ? null : context.Set<TDomain>().Remove(obj).Entity;
+            await context.SaveChangesAsync(token);
+            return obj;
+        }
+
+        /// <summary>
 		/// Deletes the specified ids.
 		/// </summary>
 		/// <typeparam name="TDomain">The type of the domain.</typeparam>
@@ -138,11 +217,29 @@ namespace Atl.Repository.Standard.Repositories.Implementations
 			if (ids is null)
 				return;
 			var context = _contextLocator.CreateDbContext();
-			var objs = context.Set<TDomain>().Where(x => ids.Contains(x.Id));
+			var objs = context.Set<TDomain>().Where(x => ids.Contains(x.Id)).ToList();
 			context.Set<TDomain>().RemoveRange(objs);
-		}
+            context.SaveChanges();
+        }
 
-		/// <summary>
+        /// <summary>
+        /// Deletes the range asynchronous.
+        /// </summary>
+        /// <typeparam name="TDomain">The type of the domain.</typeparam>
+        /// <param name="ids">The ids.</param>
+        /// <param name="token">The token.</param>
+        /// <returns></returns>
+        public async Task DeleteRangeAsync<TDomain>(IEnumerable<TKey> ids, CancellationToken token) where TDomain : class, IDomain<TKey>
+        {
+            if (ids is null)
+                return;
+            var context = _contextLocator.CreateDbContext();
+            var objs = await context.Set<TDomain>().Where(x => ids.Contains(x.Id)).ToListAsync(token);
+            context.Set<TDomain>().RemoveRange(objs);
+            await context.SaveChangesAsync(token);
+        }
+
+        /// <summary>
 		/// Deletes the specified object.
 		/// </summary>
 		/// <typeparam name="TKey">The type of the key.</typeparam>
@@ -160,11 +257,33 @@ namespace Atl.Repository.Standard.Repositories.Implementations
 				context.Set<TDomain>().Attach(obj);
 			}
 			obj = context.Set<TDomain>().Remove(obj).Entity;
-			context.SaveChanges();
-			return obj;
+            context.SaveChanges();
+            return obj;
 		}
 
-		/// <summary>
+        /// <summary>
+        /// Deletes  the specific object asynchronously.
+        /// </summary>
+        /// <typeparam name="TDomain">The type of the domain.</typeparam>
+        /// <param name="obj">The object.</param>
+        /// <param name="token">The token.</param>
+        /// <returns></returns>
+        public async Task<TDomain> DeleteAsync<TDomain>(TDomain obj, CancellationToken token) where TDomain : class, IDomain<TKey>
+        {
+            if (obj is null)
+                return null;
+            //check whether object is attached or not
+            var context = _contextLocator.CreateDbContext();
+            if (context.Entry(obj).State == EntityState.Detached)
+            {
+                context.Set<TDomain>().Attach(obj);
+            }
+            obj = context.Set<TDomain>().Remove(obj).Entity;
+            await context.SaveChangesAsync(token);
+            return obj;
+        }
+
+        /// <summary>
 		/// Deletes the specified objects.
 		/// </summary>
 		/// <typeparam name="TDomain">The type of the domain.</typeparam>
@@ -185,9 +304,34 @@ namespace Atl.Repository.Standard.Repositories.Implementations
 				}
 			}
 			context.Set<TDomain>().RemoveRange(objectList);
-			context.SaveChanges();
-		}
+            context.SaveChanges();
+        }
 
-		#endregion
+        /// <summary>
+        /// Deletes the range asynchronous.
+        /// </summary>
+        /// <typeparam name="TDomain">The type of the domain.</typeparam>
+        /// <param name="objects">The objects.</param>
+        /// <param name="token">The token.</param>
+        /// <returns></returns>
+        public async Task DeleteRangeAsync<TDomain>(IEnumerable<TDomain> objects, CancellationToken token) where TDomain : class, IDomain<TKey>
+        {
+            if (objects is null)
+                return;
+            var objectList = objects.ToList();
+
+            var context = _contextLocator.CreateDbContext();
+            foreach (var domain in objectList)
+            {
+                if (context.Entry(domain).State == EntityState.Detached)
+                {
+                    context.Set<TDomain>().Attach(domain);
+                }
+            }
+            context.Set<TDomain>().RemoveRange(objectList);
+            await context.SaveChangesAsync(token);
+        }
+
+        #endregion
 	}
 }

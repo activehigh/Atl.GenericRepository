@@ -70,8 +70,12 @@ namespace Atl.Repository.Standard.Tests.Fixtures
 			public void InjectDomain(ModelBuilder modelBuilder)
 			{
 				modelBuilder.Entity<Tenant>();
-				modelBuilder.Entity<Organization>();
-				modelBuilder.Entity<User>();
+				modelBuilder.Entity<Organization>(cfg => { cfg.HasOne<Tenant>(x => x.Tenant).WithMany(); });
+				modelBuilder.Entity<User>(cfg =>
+                {
+                    cfg.HasOne<Tenant>(x => x.Tenant).WithMany();
+                    cfg.HasOne<Organization>(x => x.Organization).WithMany();
+                });
 			}
 		}
 
@@ -79,13 +83,13 @@ namespace Atl.Repository.Standard.Tests.Fixtures
 
 
 		#region Configuration Provier
-		public class TestConfigurationProvier : IConfigurationProvider
+		public class TestConfigurationProvider : IConfigurationProvider
 		{
 			public string ConnectionString => "";
 			public DbContextOptionsBuilder ApplyDatabaseBuilderOptions(DbContextOptionsBuilder optionsBuilder)
 			{
-				var contectionStringBuilder = new SqliteConnectionStringBuilder { DataSource = "TestDatabase.db" };
-				return optionsBuilder.UseSqlite(contectionStringBuilder.ToString());
+				var connectionStringBuilder = new SqliteConnectionStringBuilder { DataSource = "TestDatabase.db" };
+				return optionsBuilder.UseSqlite(connectionStringBuilder.ToString());
 			}
 		}
 		#endregion
@@ -100,7 +104,7 @@ namespace Atl.Repository.Standard.Tests.Fixtures
 		/// </summary>
 		public TestDatabaseContext()
 		{
-			var configurationProvider = new TestConfigurationProvier();
+			var configurationProvider = new TestConfigurationProvider();
 			var domainInjector = new DomainInjector();
 			ContextFactory = new DomainContextFactory(new List<IDomainInjector>() { domainInjector }, configurationProvider);
 
