@@ -53,19 +53,31 @@ namespace Atl.Repository.Standard.Repositories.Implementations
 		{
 			obj.Id = _keyGenerator.DoesRequireNewKey(obj.Id) ? _keyGenerator.Generate(obj) : obj.Id;
 			obj.UpdatedAt = obj.CreatedAt = _clock.UtcNow.DateTime;
-			foreach (var applicationContext in _applicationContexts ?? Enumerable.Empty< IApplicationContext<TKey>> ())
-			{
-				obj = (TDomain)applicationContext.ApplyContext(obj);
-			}
-			var context = _contextLocator.CreateDbContext();
+            obj = (_applicationContexts ?? Enumerable.Empty<IApplicationContext<TKey>>()).Aggregate(obj,
+                (current, applicationContext) => (TDomain) applicationContext.ApplyContext(current));
+            var context = _contextLocator.CreateDbContext();
 			obj = context.Set<TDomain>().Add(obj).Entity;
 			context.SaveChanges();
 			return obj;
 		}
 
+        /// <summary>
+        /// Adds the specific object asynchronously.
+        /// </summary>
+        /// <typeparam name="TDomain">The type of the domain.</typeparam>
+        /// <param name="obj">The object.</param>
+        /// <param name="token">The token.</param>
+        /// <returns></returns>
         public async Task<TDomain> AddAsync<TDomain>(TDomain obj, CancellationToken token) where TDomain : class, IDomain<TKey>
         {
-            throw new NotImplementedException();
+            obj.Id = _keyGenerator.DoesRequireNewKey(obj.Id) ? _keyGenerator.Generate(obj) : obj.Id;
+            obj.UpdatedAt = obj.CreatedAt = _clock.UtcNow.DateTime;
+            obj = (_applicationContexts ?? Enumerable.Empty<IApplicationContext<TKey>>()).Aggregate(obj,
+                (current, applicationContext) => (TDomain) applicationContext.ApplyContext(current));
+            var context = _contextLocator.CreateDbContext();
+            obj = context.Set<TDomain>().Add(obj).Entity;
+            await context.SaveChangesAsync(token);
+            return obj;
         }
 
         /// <summary>
@@ -80,11 +92,9 @@ namespace Atl.Repository.Standard.Repositories.Implementations
 		{
 			var context = _contextLocator.CreateDbContext();
 			obj.UpdatedAt = _clock.UtcNow.DateTime;
-			foreach (var applicationContext in _applicationContexts ?? Enumerable.Empty<IApplicationContext<TKey>>())
-			{
-				obj = (TDomain)applicationContext.ApplyContext(obj);
-			}
-			if (context.Entry(obj).State == EntityState.Detached)
+            obj = (_applicationContexts ?? Enumerable.Empty<IApplicationContext<TKey>>()).Aggregate(obj,
+                (current, applicationContext) => (TDomain) applicationContext.ApplyContext(current));
+            if (context.Entry(obj).State == EntityState.Detached)
 			{
 				context.Set<TDomain>().Attach(obj);
 				context.Entry(obj).State = EntityState.Modified;
@@ -93,9 +103,26 @@ namespace Atl.Repository.Standard.Repositories.Implementations
 			return obj;
 		}
 
+        /// <summary>
+        /// Updates the specific object asynchronously.
+        /// </summary>
+        /// <typeparam name="TDomain">The type of the domain.</typeparam>
+        /// <param name="obj">The object.</param>
+        /// <param name="token">The token.</param>
+        /// <returns></returns>
         public async Task<TDomain> UpdateAsync<TDomain>(TDomain obj, CancellationToken token) where TDomain : class, IDomain<TKey>
         {
-            throw new NotImplementedException();
+            var context = _contextLocator.CreateDbContext();
+            obj.UpdatedAt = _clock.UtcNow.DateTime;
+            obj = (_applicationContexts ?? Enumerable.Empty<IApplicationContext<TKey>>()).Aggregate(obj,
+                (current, applicationContext) => (TDomain) applicationContext.ApplyContext(current));
+            if (context.Entry(obj).State == EntityState.Detached)
+            {
+                context.Set<TDomain>().Attach(obj);
+                context.Entry(obj).State = EntityState.Modified;
+            }
+            await context.SaveChangesAsync(token);
+            return obj;
         }
 
         #endregion
@@ -160,8 +187,10 @@ namespace Atl.Repository.Standard.Repositories.Implementations
 		{
 			var context = _contextLocator.CreateDbContext();
 			var obj = context.Set<TDomain>().FirstOrDefault(_keyGenerator.Equal<TDomain>(x => x.Id, id).Compile());
-			return obj == null ? null : context.Set<TDomain>().Remove(obj).Entity;
-		}
+			obj = obj == null ? null : context.Set<TDomain>().Remove(obj).Entity;
+            context.SaveChanges();
+            return obj;
+        }
 
         /// <summary>
         /// Deletes the asynchronous.
@@ -175,6 +204,7 @@ namespace Atl.Repository.Standard.Repositories.Implementations
             var context = _contextLocator.CreateDbContext();
             var obj = await context.Set<TDomain>().FirstOrDefaultAsync(_keyGenerator.Equal<TDomain>(x => x.Id, id), CancellationToken.None);
             return obj == null ? null : context.Set<TDomain>().Remove(obj).Entity;
+            await context.SaveChangesAsync(token);
         }
 
         /// <summary>
@@ -189,13 +219,26 @@ namespace Atl.Repository.Standard.Repositories.Implementations
 			if (ids is null)
 				return;
 			var context = _contextLocator.CreateDbContext();
-			var objs = context.Set<TDomain>().Where(x => ids.Contains(x.Id));
+			var objs = context.Set<TDomain>().Where(x => ids.Contains(x.Id)).ToList();
 			context.Set<TDomain>().RemoveRange(objs);
-		}
+            context.SaveChanges();
+        }
 
+        /// <summary>
+        /// Deletes the range asynchronous.
+        /// </summary>
+        /// <typeparam name="TDomain">The type of the domain.</typeparam>
+        /// <param name="ids">The ids.</param>
+        /// <param name="token">The token.</param>
+        /// <returns></returns>
         public async Task DeleteRangeAsync<TDomain>(IEnumerable<TKey> ids, CancellationToken token) where TDomain : class, IDomain<TKey>
         {
-            throw new NotImplementedException();
+            if (ids is null)
+                return;
+            var context = _contextLocator.CreateDbContext();
+            var objs = await context.Set<TDomain>().Where(x => ids.Contains(x.Id)).ToListAsync(token);
+            context.Set<TDomain>().RemoveRange(objs);
+            await context.SaveChangesAsync(token);
         }
 
         /// <summary>
@@ -216,13 +259,30 @@ namespace Atl.Repository.Standard.Repositories.Implementations
 				context.Set<TDomain>().Attach(obj);
 			}
 			obj = context.Set<TDomain>().Remove(obj).Entity;
-			context.SaveChanges();
-			return obj;
+            context.SaveChanges();
+            return obj;
 		}
 
+        /// <summary>
+        /// Deletes  the specific object asynchronously.
+        /// </summary>
+        /// <typeparam name="TDomain">The type of the domain.</typeparam>
+        /// <param name="obj">The object.</param>
+        /// <param name="token">The token.</param>
+        /// <returns></returns>
         public async Task<TDomain> DeleteAsync<TDomain>(TDomain obj, CancellationToken token) where TDomain : class, IDomain<TKey>
         {
-            throw new NotImplementedException();
+            if (obj is null)
+                return null;
+            //check whether object is attached or not
+            var context = _contextLocator.CreateDbContext();
+            if (context.Entry(obj).State == EntityState.Detached)
+            {
+                context.Set<TDomain>().Attach(obj);
+            }
+            obj = context.Set<TDomain>().Remove(obj).Entity;
+            await context.SaveChangesAsync(token);
+            return obj;
         }
 
         /// <summary>
@@ -246,12 +306,32 @@ namespace Atl.Repository.Standard.Repositories.Implementations
 				}
 			}
 			context.Set<TDomain>().RemoveRange(objectList);
-			context.SaveChanges();
-		}
+            context.SaveChanges();
+        }
 
+        /// <summary>
+        /// Deletes the range asynchronous.
+        /// </summary>
+        /// <typeparam name="TDomain">The type of the domain.</typeparam>
+        /// <param name="objects">The objects.</param>
+        /// <param name="token">The token.</param>
+        /// <returns></returns>
         public async Task DeleteRangeAsync<TDomain>(IEnumerable<TDomain> objects, CancellationToken token) where TDomain : class, IDomain<TKey>
         {
-            throw new NotImplementedException();
+            if (objects is null)
+                return;
+            var objectList = objects.ToList();
+
+            var context = _contextLocator.CreateDbContext();
+            foreach (var domain in objectList)
+            {
+                if (context.Entry(domain).State == EntityState.Detached)
+                {
+                    context.Set<TDomain>().Attach(domain);
+                }
+            }
+            context.Set<TDomain>().RemoveRange(objectList);
+            await context.SaveChangesAsync(token);
         }
 
         #endregion
