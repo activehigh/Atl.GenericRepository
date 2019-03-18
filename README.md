@@ -18,7 +18,7 @@ dotnet add package Atl.Repository.Standard
 ```
 
 # Basic Usage
-https://activehigh.wordpress.com/2017/08/13/atl-repository-standard-basic-usage/
+[Atl.Repository.Standard – Basic Usage](https://activehigh.wordpress.com/2017/08/13/atl-repository-standard-basic-usage/)
 # Advanced Usage
 
 Comming soon.
