@@ -20,8 +20,7 @@ dotnet add package Atl.Repository.Standard
 # Basic Usage
 [Atl.Repository.Standard – Basic Usage](https://activehigh.wordpress.com/2017/08/13/atl-repository-standard-basic-usage/)
 # Advanced Usage
-
-Comming soon.
+[Atl.Repository.Standard – Using IoC Or A DI Container](https://brainlesscoder.com/2019/03/21/atl-repository-standard-using-ioc-or-a-di-container/)
 
 
 # License
