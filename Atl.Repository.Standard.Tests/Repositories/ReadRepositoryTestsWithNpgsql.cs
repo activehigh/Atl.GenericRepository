@@ -18,7 +18,6 @@ using NUnit.Framework;
 
 namespace Atl.Repository.Standard.Tests.Repositories
 {
-    [TestFixture]
     public class ReadRepositoryTestsWithNPgSQL
     {
         private IGenericRepository<int> _repo;
