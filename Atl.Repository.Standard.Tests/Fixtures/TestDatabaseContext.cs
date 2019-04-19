@@ -8,6 +8,7 @@ using Atl.Repository.Standard.Domains;
 using Atl.Repository.Standard.Domains.Contracts;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 
 namespace Atl.Repository.Standard.Tests.Fixtures
 {
@@ -81,30 +82,17 @@ namespace Atl.Repository.Standard.Tests.Fixtures
 
 		#endregion
 
-
-		#region Configuration Provier
-		public class TestConfigurationProvider : IConfigurationProvider
-		{
-			public string ConnectionString => "";
-			public DbContextOptionsBuilder ApplyDatabaseBuilderOptions(DbContextOptionsBuilder optionsBuilder)
-			{
-				var connectionStringBuilder = new SqliteConnectionStringBuilder { DataSource = "TestDatabase.db" };
-				return optionsBuilder.UseSqlite(connectionStringBuilder.ToString());
-			}
-		}
-		#endregion
-		#endregion
+        #endregion
 
 
-		public DomainContextFactory ContextFactory { get; }
+        public DomainContextFactory ContextFactory { get; }
 
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="TestDatabaseContext"/> class.
 		/// </summary>
-		public TestDatabaseContext()
+		public TestDatabaseContext(IConfigurationProvider configurationProvider)
 		{
-			var configurationProvider = new TestConfigurationProvider();
 			var domainInjector = new DomainInjector();
 			ContextFactory = new DomainContextFactory(new List<IDomainInjector>() { domainInjector }, configurationProvider);
 

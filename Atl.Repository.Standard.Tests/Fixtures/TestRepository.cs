@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using Atl.Repository.Standard.ApplicationContext.Contracts;
+using Atl.Repository.Standard.Configuration.Contracts;
 using Atl.Repository.Standard.DomainInjection.Contracts;
 using Atl.Repository.Standard.DomainInjection.KeyGenerators;
 using Atl.Repository.Standard.Domains.Contracts;
@@ -9,7 +10,6 @@ using Atl.Repository.Standard.Repositories.Contracts;
 using Atl.Repository.Standard.Repositories.Implementations;
 using Microsoft.Extensions.Internal;
 using NSubstitute;
-using Xunit;
 
 namespace Atl.Repository.Standard.Tests.Fixtures
 {
@@ -50,12 +50,12 @@ namespace Atl.Repository.Standard.Tests.Fixtures
 		#endregion
 
 
-		public TestRepository()
+		public TestRepository(IConfigurationProvider configurationProvider, int id = 10, bool requiresId = true)
 		{
-			var dbContext = new TestDatabaseContext();
+			var dbContext = new TestDatabaseContext(configurationProvider);
 			var idGenerator = Substitute.For<IKeyGenerator<int>>();
-			idGenerator.DoesRequireNewKey(Arg.Any<int>()).Returns(true);
-			idGenerator.Generate(Arg.Any<IDomain<int>>()).Returns(10);
+			idGenerator.DoesRequireNewKey(Arg.Any<int>()).Returns(requiresId);
+			idGenerator.Generate(Arg.Any<IDomain<int>>()).Returns(id);
 
 			OrgContext = new OrganizationContext();
 			TContext = new TenantContext();
