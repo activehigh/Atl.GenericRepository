@@ -4,33 +4,49 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Atl.Repository.Standard.Configuration.Contracts;
 using Atl.Repository.Standard.Repositories.Contracts;
 using Atl.Repository.Standard.Repositories.Implementations;
 using Atl.Repository.Standard.Tests.Fixtures;
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
-using Xunit;
+using NUnit.Framework;
 
 namespace Atl.Repository.Standard.Tests.Repositories
 {
 	public class ReadRepositoryTests
-	{
-		private readonly IGenericRepository<int> _repo;
-		private readonly TestRepository _testRepo;
+    {
+
+        #region Configuration Provier
+        public class SQLiteConfigurationProvider : IConfigurationProvider
+        {
+            public string ConnectionString => "";
+            public DbContextOptionsBuilder ApplyDatabaseBuilderOptions(DbContextOptionsBuilder optionsBuilder)
+            {
+                var connectionStringBuilder = new SqliteConnectionStringBuilder { DataSource = "TestDatabase.db" };
+                return optionsBuilder.UseSqlite(connectionStringBuilder.ToString());
+            }
+        }
+        #endregion
+
+        private IGenericRepository<int> _repo;
+		private TestRepository _testRepo;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ReadRepositoryTests"/> class.
         /// </summary>
-        public ReadRepositoryTests()
+        [SetUp]
+        public void SetUp()
 		{
-            _testRepo = new TestRepository();
+            _testRepo = new TestRepository(new SQLiteConfigurationProvider());
 			_repo = _testRepo.Repository;
 		}
 
         /// <summary>
         /// Gets all should return successfully.
         /// </summary>
-        [Fact]
-		public void GetAll_Should_Return_Successfully()
+        [TestCase]
+        public void GetAll_Should_Return_Successfully()
 		{
 			//save entity
             var tenant = new TestDatabaseContext.Tenant();
@@ -45,8 +61,8 @@ namespace Atl.Repository.Standard.Tests.Repositories
 			//get
 			var userFetched = _repo.GetAll<TestDatabaseContext.User>()
                 .First();
-			Assert.Equal(userFetched.Id, user.Id);
-			Assert.Equal(10, userFetched.Id);
+			Assert.AreEqual(userFetched.Id, user.Id);
+			Assert.AreEqual(10, userFetched.Id);
 
 			//update
 			userFetched.IsLocked = true;
@@ -65,7 +81,7 @@ namespace Atl.Repository.Standard.Tests.Repositories
         /// <summary>
         /// Gets all with include should return related object.
         /// </summary>
-        [Fact]
+        [TestCase]
         public void GetAll_WithInclude_Should_Return_RelatedObject()
         {
             //save entity
@@ -85,8 +101,8 @@ namespace Atl.Repository.Standard.Tests.Repositories
                 .Include(x => x.Organization)
                 .Include(x => x.Tenant)
                 .First();
-            Assert.Equal(userFetched.Id, user.Id);
-            Assert.Equal(10, userFetched.Id);
+            Assert.AreEqual(userFetched.Id, user.Id);
+            Assert.AreEqual(10, userFetched.Id);
             Assert.NotNull(userFetched.Tenant);
             Assert.NotNull(userFetched.Organization);
 
@@ -108,7 +124,7 @@ namespace Atl.Repository.Standard.Tests.Repositories
         /// Gets all asynchronous should return successfully.
         /// </summary>
         /// <returns></returns>
-        [Fact]
+        [TestCase]
         public async Task GetAllAsync_Should_Return_Successfully()
         {
             //save entity
@@ -125,8 +141,8 @@ namespace Atl.Repository.Standard.Tests.Repositories
 
             //get
             var userFetched = (await _repo.GetAllAsync<TestDatabaseContext.User>(CancellationToken.None)).First();
-            Assert.Equal(userFetched.Id, user.Id);
-            Assert.Equal(10, userFetched.Id);
+            Assert.AreEqual(userFetched.Id, user.Id);
+            Assert.AreEqual(10, userFetched.Id);
 
             //update
             userFetched.IsLocked = true;
@@ -146,7 +162,7 @@ namespace Atl.Repository.Standard.Tests.Repositories
         /// Gets all asynchronous with include should return related object.
         /// </summary>
         /// <returns></returns>
-        [Fact]
+        [TestCase]
         public async Task GetAllAsync_WithInclude_Should_Return_RelatedObject()
         {
             //save entity
@@ -166,8 +182,8 @@ namespace Atl.Repository.Standard.Tests.Repositories
                 .Include(x => x.Organization)
                 .Include(x => x.Tenant)
                 .First();
-            Assert.Equal(userFetched.Id, user.Id);
-            Assert.Equal(10, userFetched.Id);
+            Assert.AreEqual(userFetched.Id, user.Id);
+            Assert.AreEqual(10, userFetched.Id);
             Assert.NotNull(userFetched.Tenant);
             Assert.NotNull(userFetched.Organization);
 
