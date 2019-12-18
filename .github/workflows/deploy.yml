@@ -1,10 +1,10 @@
-name: Atl Generic Repository - Build/Test/Deploy
+name: Atl Generic Repository - Deploy
 
 on: [push]
 
 jobs:
   deploy:
-    uses: ./.github/actions/buildandtest
+    uses: ./.github/actions/build-and-test
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
