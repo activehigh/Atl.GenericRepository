@@ -4,10 +4,9 @@ on: [push]
 
 jobs:
   deploy:
-    uses: ./.github/actions/build-and-test
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v1
+    - uses: ./.github/actions/build-and-test
     - name: Setup .NET Core
       uses: actions/setup-dotnet@v1
       with:
