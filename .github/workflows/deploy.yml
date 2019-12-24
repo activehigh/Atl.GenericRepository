@@ -6,7 +6,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-    - uses: ./.github/actions/build-and-test
+    - uses: ./.github/workflows/build-and-test
     - name: Build with dotnet
       run: dotnet test --configuration Release
       working-directory: ./src
