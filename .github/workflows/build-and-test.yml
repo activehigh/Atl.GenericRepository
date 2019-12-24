@@ -1,6 +1,9 @@
 name: Atl Generic Repository - Buil d& Test
 
-on: [push]
+on: 
+  push:
+    branches-ignore:
+      - master
 
 jobs:
   build-and-test:
