@@ -9,8 +9,6 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-    - env:
-        nuget_api_key: ${{ secrets.NUGET_API_KEY }}
     - uses: actions/checkout@v1
 
     - name: Setup .NET Core
@@ -31,5 +29,7 @@ jobs:
       working-directory: ./src
 
     - name: Publish nuget package
-      run: dotnet nuget push *.nupkg
-      working-directory: ./src -k $nuget_api_key
+      run: dotnet nuget push *.nupkg -k $nuget_api_key
+      env:
+        nuget_api_key: ${{ secrets.NUGET_API_KEY }}
+      working-directory: ./src
