@@ -17,13 +17,13 @@ jobs:
         dotnet-version: 2.2.108
 
     - name: Build
-      run: dotnet build --configuration Debug
+      run: dotnet build --configuration Release
       working-directory: ./src
 
     - name: Run unit tests
-      run: dotnet test --configuration Debug
+      run: dotnet test --configuration Release
       working-directory: ./src
-      
+
     - name: Generate nuget package
       run: dotnet pack --configuration Release
       working-directory: ./src
