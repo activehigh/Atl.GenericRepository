@@ -1,10 +1,14 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
 
     <IsPackable>false</IsPackable>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Repositories\ReadRepositoryTestsWithNpgsql.cs" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Docker.DotNet" Version="3.125.2" />
