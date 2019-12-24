@@ -1,3 +1,6 @@
+# Buil Status
+![](https://github.com/Activehigh/Atl.GenericRepository/workflows/build-and-test/badge.svg)
+
 # A generic repository for .net platform
 
 A Lightweight EF Core Repository. More changes comming. 
