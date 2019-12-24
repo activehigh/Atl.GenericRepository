@@ -2,7 +2,7 @@ name: Atl Generic Repository - Build & Test
 
 on: 
   push:
-    branches-ignore:
+    branches:
       - master
 
 jobs:
