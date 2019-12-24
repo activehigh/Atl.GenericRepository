@@ -2,7 +2,7 @@ name: Atl Generic Repository - Build & Test
 
 on: 
   push:
-    branches:
+    branches-ignore:
       - master
 
 jobs:
@@ -14,12 +14,12 @@ jobs:
     - name: Setup .NET Core
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: 2.2.108
+        dotnet-version: 3.1.100
 
-    - name: Build with dotnet
+    - name: Build
       run: dotnet build --configuration Release
       working-directory: ./src
-      
-    - name: Test with dotnet
+
+    - name: Run unit tests
       run: dotnet test --configuration Release
       working-directory: ./src
