@@ -6,10 +6,28 @@ on:
       - master
 
 jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 2.2.108
+
+    - name: Build
+      run: dotnet build --configuration Debug
+      working-directory: ./src
+
+    - name: Run unit tests
+      run: dotnet test --configuration Debug
+      working-directory: ./src
+
   deploy:
     runs-on: ubuntu-latest
     steps:
-    - uses: ./.github/workflows/build-and-test
-    - name: Build with dotnet
-      run: dotnet test --configuration Release
+    - uses: build-and-test
+    - name: Generate nuget package
+      run: dotnet pack --configuration Release
       working-directory: ./src

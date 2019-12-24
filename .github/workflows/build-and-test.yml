@@ -1,4 +1,4 @@
-name: Atl Generic Repository - Buil d& Test
+name: Atl Generic Repository - Build & Test
 
 on: 
   push:
