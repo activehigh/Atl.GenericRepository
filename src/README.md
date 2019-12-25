@@ -1,7 +1,3 @@
-
-# Build Status
-![](https://github.com/Activehigh/Atl.GenericRepository/workflows/Atl%20Generic%20Repository%20-%20Build%20&%20Test/badge.svg)
-
 # A generic repository for .net platform
 
 A Lightweight EF Core Repository. More changes comming. 
