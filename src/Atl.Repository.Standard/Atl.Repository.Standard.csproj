@@ -4,7 +4,7 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <Copyright />
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>1.1.1-alpha</Version>
+    <Version>1.1.1</Version>
     <PackageLicenseUrl></PackageLicenseUrl>
     <RepositoryUrl>https://github.com/Activehigh/Atl.GenericRepository</RepositoryUrl>
     <Authors>Mahmudul Islam</Authors>
