@@ -22,6 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Atl.Repository.EF\Atl.Repository.EF.csproj" />
     <ProjectReference Include="..\Atl.Repository.Standard\Atl.Repository.Standard.csproj" />
   </ItemGroup>
 

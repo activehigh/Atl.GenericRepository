@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using Atl.Repository.Standard.ApplicationContext.Contracts;
-using Atl.Repository.Standard.Configuration.Contracts;
-using Atl.Repository.Standard.DepdendencyInjection;
-using Atl.Repository.Standard.DomainInjection.Contracts;
+using Atl.Repository.EF.Configuration.Contracts;
+using Atl.Repository.EF.DepdendencyInjection;
+using Atl.Repository.EF.DomainInjection.Contracts;
 using Atl.Repository.Standard.Domains;
 using Atl.Repository.Standard.Domains.Contracts;
 using Microsoft.Data.Sqlite;
@@ -65,7 +64,7 @@ namespace Atl.Repository.Standard.Tests.Fixtures
 		/// <summary>
 		/// 
 		/// </summary>
-		/// <seealso cref="Atl.Repository.Standard.DomainInjection.Contracts.IDomainInjector" />
+		/// <seealso cref="IDomainInjector" />
 		public class DomainInjector : IDomainInjector
 		{
 			public void InjectDomain(ModelBuilder modelBuilder)

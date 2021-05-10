@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
-using Atl.Repository.Standard.ApplicationContext.Contracts;
-using Atl.Repository.Standard.Configuration.Contracts;
-using Atl.Repository.Standard.DomainInjection.Contracts;
-using Atl.Repository.Standard.DomainInjection.KeyGenerators;
+using Atl.Repository.EF.ApplicationContext.Contracts;
+using Atl.Repository.EF.Configuration.Contracts;
+using Atl.Repository.EF.DomainInjection.Contracts;
+using Atl.Repository.EF.Repositories.Implementations;
 using Atl.Repository.Standard.Domains.Contracts;
 using Atl.Repository.Standard.Repositories.Contracts;
-using Atl.Repository.Standard.Repositories.Implementations;
 using Microsoft.Extensions.Internal;
 using NSubstitute;
 
