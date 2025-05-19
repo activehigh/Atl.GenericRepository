@@ -13,6 +13,10 @@ Atl.Repository.Standard is a robust implementation of the repository pattern tha
 - Domain-driven design principles
 - Parallelism and concurrency handling
 
+For detailed usage instructions, please refer to:
+- [Basic Usage Guide](https://activehigh.wordpress.com/2019/03/18/atl-repository-standard-basic-usage/)
+- [Advanced Usage with Dependency Injection](https://activehigh.wordpress.com/2019/03/21/atl-repository-standard-using-ioc-or-a-di-container/)
+
 ## Installation
 
 ### NuGet Package
