@@ -11,6 +11,7 @@ using Atl.Repository.Standard.Tests.Fixtures;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 
 namespace Atl.Repository.Standard.Tests.Repositories
 {
@@ -61,21 +62,21 @@ namespace Atl.Repository.Standard.Tests.Repositories
 			//get
 			var userFetched = _repo.GetAll<TestDatabaseContext.User>()
                 .First();
-			Assert.AreEqual(userFetched.Id, user.Id);
-			Assert.AreEqual(10, userFetched.Id);
+			ClassicAssert.AreEqual(userFetched.Id, user.Id);
+			ClassicAssert.AreEqual(10, userFetched.Id);
 
 			//update
 			userFetched.IsLocked = true;
 			_repo.Update(userFetched);
 
 			userFetched = _repo.GetAll<TestDatabaseContext.User>().First();
-			Assert.True(userFetched.IsLocked);
+			ClassicAssert.True(userFetched.IsLocked);
 
 			//delete
 			_repo.Delete(user);
 
 			userFetched = _repo.GetAll<TestDatabaseContext.User>().FirstOrDefault();
-			Assert.Null(userFetched);
+			ClassicAssert.Null(userFetched);
 		}
 
         /// <summary>
@@ -101,23 +102,23 @@ namespace Atl.Repository.Standard.Tests.Repositories
                 .Include(x => x.Organization)
                 .Include(x => x.Tenant)
                 .First();
-            Assert.AreEqual(userFetched.Id, user.Id);
-            Assert.AreEqual(10, userFetched.Id);
-            Assert.NotNull(userFetched.Tenant);
-            Assert.NotNull(userFetched.Organization);
+            ClassicAssert.AreEqual(userFetched.Id, user.Id);
+            ClassicAssert.AreEqual(10, userFetched.Id);
+            ClassicAssert.NotNull(userFetched.Tenant);
+            ClassicAssert.NotNull(userFetched.Organization);
 
             //update
             userFetched.IsLocked = true;
             _repo.Update(userFetched);
 
             userFetched = _repo.GetAll<TestDatabaseContext.User>().First();
-            Assert.True(userFetched.IsLocked);
+            ClassicAssert.True(userFetched.IsLocked);
 
             //delete
             _repo.Delete(user);
 
             userFetched = _repo.GetAll<TestDatabaseContext.User>().FirstOrDefault();
-            Assert.Null(userFetched);
+            ClassicAssert.Null(userFetched);
         }
 
         /// <summary>
@@ -141,21 +142,21 @@ namespace Atl.Repository.Standard.Tests.Repositories
 
             //get
             var userFetched = (await _repo.GetAllAsync<TestDatabaseContext.User>(CancellationToken.None)).First();
-            Assert.AreEqual(userFetched.Id, user.Id);
-            Assert.AreEqual(10, userFetched.Id);
+            ClassicAssert.AreEqual(userFetched.Id, user.Id);
+            ClassicAssert.AreEqual(10, userFetched.Id);
 
             //update
             userFetched.IsLocked = true;
             await _repo.UpdateAsync(userFetched, CancellationToken.None);
 
             userFetched = (await _repo.GetAllAsync<TestDatabaseContext.User>(CancellationToken.None)).First();
-            Assert.True(userFetched.IsLocked);
+            ClassicAssert.True(userFetched.IsLocked);
 
             //delete
             await _repo.DeleteAsync(user, CancellationToken.None);
 
             userFetched = (await _repo.GetAllAsync<TestDatabaseContext.User>(CancellationToken.None)).FirstOrDefault();
-            Assert.Null(userFetched);
+            ClassicAssert.Null(userFetched);
         }
 
         /// <summary>
@@ -182,23 +183,23 @@ namespace Atl.Repository.Standard.Tests.Repositories
                 .Include(x => x.Organization)
                 .Include(x => x.Tenant)
                 .First();
-            Assert.AreEqual(userFetched.Id, user.Id);
-            Assert.AreEqual(10, userFetched.Id);
-            Assert.NotNull(userFetched.Tenant);
-            Assert.NotNull(userFetched.Organization);
+            ClassicAssert.AreEqual(userFetched.Id, user.Id);
+            ClassicAssert.AreEqual(10, userFetched.Id);
+            ClassicAssert.NotNull(userFetched.Tenant);
+            ClassicAssert.NotNull(userFetched.Organization);
 
             //update
             userFetched.IsLocked = true;
             await _repo.UpdateAsync(userFetched, CancellationToken.None);
 
             userFetched = (await _repo.GetAllAsync<TestDatabaseContext.User>(CancellationToken.None)).First();
-            Assert.True(userFetched.IsLocked);
+            ClassicAssert.True(userFetched.IsLocked);
 
             //delete
             await _repo.DeleteAsync(user, CancellationToken.None);
 
             userFetched = (await _repo.GetAllAsync<TestDatabaseContext.User>(CancellationToken.None)).FirstOrDefault();
-            Assert.Null(userFetched);
+            ClassicAssert.Null(userFetched);
         }
     }
 }
